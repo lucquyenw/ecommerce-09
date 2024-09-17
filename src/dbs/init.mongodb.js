@@ -21,9 +21,6 @@ class Database {
 			.connect(connectionString)
 			.then((_) => console.log('Connected MongoDB Success', countConnect()))
 			.catch((err) => console.log('Error Connect!'));
-
-		mongoose.createConnection(connectionString);
-		mongoose.createConnection(connectionString);
 	}
 
 	static getInstance() {
