@@ -1,8 +1,10 @@
 'use strict';
 
 const mongoose = require('mongoose');
-
-const connectionString = 'mongodb://localhost:27017/shopDEV';
+const {
+	db: { host, port, name },
+} = require('../configs/config.mongodb.js');
+const connectionString = `mongodb://${host}:${port}/${name}`;
 
 const { countConnect } = require('../helpers/checkConnect.js');
 
