@@ -21,7 +21,7 @@ const apiKey = async (req, res, next) => {
 	}
 
 	req.objKey = apiKey;
-	return next();
+	next();
 };
 
 const checkPermisison = (permission) => {
@@ -30,10 +30,10 @@ const checkPermisison = (permission) => {
 			throw new FobiddenError('Permission denied');
 		}
 		if (req.objKey.permissions.some((p) => p === permission)) {
-			return next();
+			next();
+		} else {
+			throw new FobiddenError('Permission denied');
 		}
-
-		throw new FobiddenError('Permission denied');
 	};
 };
 

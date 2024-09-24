@@ -6,6 +6,8 @@ const ErrorMessage = {
 	CONFLICT: 'Conflict Error',
 	BAD_REQUEST: 'Bad Request',
 	FOBIDDEN: 'Fobidden Request',
+	NOT_FOUND: 'Not Found',
+	UNANUTHENTICATED: 'UnAuthenticated',
 };
 
 class CustomError extends Error {
@@ -42,9 +44,29 @@ class FobiddenError extends CustomError {
 	}
 }
 
+class NotFoundError extends CustomError {
+	constructor(
+		message = ErrorMessage.NOT_FOUND,
+		statusCode = HttpStatus.HTTP_STATUS_NOT_FOUND
+	) {
+		super(message, statusCode);
+	}
+}
+
+class AuthenticationError extends CustomError {
+	constructor(
+		message = ErrorMessage.UNANUTHENTICATED,
+		statusCode = HttpStatus.HTTP_STATUS_UNAUTHORIZED
+	) {
+		super(message, statusCode);
+	}
+}
+
 module.exports = {
 	CustomError,
 	ConflictRequestError,
 	BadRequestError,
 	FobiddenError,
+	NotFoundError,
+	AuthenticationError,
 };

@@ -1,5 +1,8 @@
 module.exports = (func) => {
 	return (req, res, next) => {
-		func(req, res, next).catch((err) => next(err));
+		const error = func(req, res, next);
+		if (error) {
+			error.catch((err) => next(err));
+		}
 	};
 };
