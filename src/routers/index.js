@@ -1,14 +1,16 @@
 'use strict';
 
 const express = require('express');
+const { apiKey, checkPermisison } = require('../middlewares/checkAuth');
+const asyncErrorhandler = require('../utils/asyncErrorHandler');
 const router = express.Router();
 
-router.use('/v1/api', require('./access'));
+//check client is authorized and check do the client app has permisison to call API
+router.use(
+	asyncErrorhandler(apiKey),
+	asyncErrorhandler(checkPermisison('0000'))
+);
 
-// router.get('/', (req, res) => {
-// 	return res.status(200).json({
-// 		message: 'Welcome FanTipJs!',
-// 	});
-// });
+router.use('/v1/api', require('./access'));
 
 module.exports = router;

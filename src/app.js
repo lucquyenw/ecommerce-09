@@ -4,7 +4,8 @@ const express = require('express');
 const morgan = require('morgan');
 const { default: helmet } = require('helmet');
 const compression = require('compression');
-const { checkOverload } = require('./helpers/checkConnect.js');
+const { checkOverload } = require('./helpers/checkConnect');
+const globalErrorHandler = require('./controllers/error.controller');
 const app = express();
 
 //init middleware.
@@ -24,6 +25,13 @@ require('./dbs/init.mongodb.js');
 //init router.
 app.use('', require('./routers'));
 
-//handle error
+//handling error
+app.all('*', (req, res, next) => {
+	const error = new Error('Not found');
+	err.status = 404;
+	next(error);
+});
+
+app.use(globalErrorHandler);
 
 module.exports = app;
