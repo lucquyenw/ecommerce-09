@@ -28,7 +28,7 @@ app.use('', require('./routers'));
 //handling error
 app.all('*', (req, res, next) => {
 	const error = new Error('Not found');
-	err.status = 404;
+	error.status = 404;
 	next(error);
 });
 
