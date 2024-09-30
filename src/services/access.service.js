@@ -4,15 +4,17 @@ const shopModel = require('../models/shop.model');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const KeyTokenService = require('./keyToken.service');
-const { createTokenPair } = require('../utils/authUtil');
+const { createTokenPair, verifyJWT } = require('../utils/authUtil');
 const { getInfoData } = require('../utils');
 const {
 	BadRequestError,
 	NotFoundError,
 	CustomError,
 	AuthenticationError,
+	FobiddenError,
 } = require('../utils/customError');
 const { findByEmail } = require('./shop.service');
+const { token } = require('morgan');
 
 const RoleShop = {
 	SHOP: '00000',
@@ -130,6 +132,63 @@ class AccessService {
 		return {
 			code: 200,
 			metadata: null,
+		};
+	};
+
+	static logout = async (keyToken) => {
+		return await KeyTokenService.removeKeyById(keyToken._id);
+	};
+
+	static handleRefreshToken = async (refreshToken) => {
+		const foundToken = await KeyTokenService.findByRefreshTokenUsed(
+			refreshToken
+		);
+
+		if (foundToken) {
+			const { userId, email } = await verifyJWT(
+				refreshToken,
+				foundToken.privateKey
+			);
+			console.log({ userId, email });
+			await KeyTokenService.removeKeyById(foundToken._id);
+			throw new FobiddenError('something wrong happened, please re-login');
+		}
+
+		const holderToken = await KeyTokenService.findByRefreshToken(refreshToken);
+		if (!holderToken) {
+			throw new FobiddenError('something wrong happened, please re-login');
+		}
+
+		const { userId, email } = await verifyJWT(
+			refreshToken,
+			holderToken.privateKey
+		);
+		const foundShop = await findByEmail({ email });
+		if (!foundShop) throw new AuthenticationError('Shop is not registered');
+
+		const tokens = await createTokenPair(
+			{ userId: foundShop._id, email: foundShop.email },
+			holderToken.publicKey,
+			holderToken.privateKey
+		);
+
+		await holderToken.updateOne({
+			$set: {
+				refreshToken: tokens.refreshToken,
+			},
+			$addToSet: {
+				usedRefreshTokens: refreshToken,
+			},
+		});
+		return {
+			status: 200,
+			metadata: {
+				shop: getInfoData({
+					fields: ['_id', 'name', 'email'],
+					object: foundShop,
+				}),
+				tokens,
+			},
 		};
 	};
 }
