@@ -60,16 +60,21 @@ class DiscountController {
 	};
 
 	getAllProductsByCode = async (req, res, next) => {
-		const { page, limit, code } = req.query;
 		const result = await DiscountService.getProductsWithDiscountCode({
-			code,
-			shopId: req.user.userId,
-			limit,
-			page,
+			...req.query,
 		});
 
 		return res.status(200).json({
 			message: 'All product of code',
+			metadata: result,
+		});
+	};
+
+	getDiscountAmount = async (req, res, next) => {
+		const result = await DiscountService.getDiscountAmount(req.body);
+
+		return res.status(200).json({
+			message: 'Discount amount',
 			metadata: result,
 		});
 	};

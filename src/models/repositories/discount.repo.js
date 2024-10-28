@@ -71,7 +71,7 @@ const createDiscount = async ({
 	return await discountModel.create({
 		discount_name: name,
 		discount_description: description,
-		discount_types: type,
+		discount_type: type,
 		discount_value: value,
 		discount_max_value: max_value,
 		discount_code: code,
@@ -89,9 +89,24 @@ const createDiscount = async ({
 	});
 };
 
+const findOneDiscount = async ({ filter, unSelect }) => {
+	return await discountModel.findOne(filter, getUnSelectData(unSelect)).lean();
+};
+
+const deleteOneDiscount = async ({ filter }) => {
+	return await discountModel.findOneAndDelete(filter);
+};
+
+const updateOneDiscount = async ({ id, update, options }) => {
+	return await discountModel.findByIdAndDelete(id, update, options);
+};
+
 module.exports = {
 	findExistDiscount,
 	createDiscount,
 	findAllDiscounts,
 	findAllDiscountsWithUnSelect,
+	findOneDiscount,
+	deleteOneDiscount,
+	updateOneDiscount,
 };
