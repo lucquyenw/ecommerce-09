@@ -85,7 +85,10 @@ const findAllProducts = async ({ limit, sort, page, filter, select }) => {
 };
 
 const findProduct = async ({ product_id, unSelect }) => {
-	return await product.findById(product_id).select(getUnSelectData(unSelect));
+	return await product
+		.findById(product_id)
+		.select(getUnSelectData(unSelect))
+		.lean();
 };
 
 const findByIdAndUpdate = async ({

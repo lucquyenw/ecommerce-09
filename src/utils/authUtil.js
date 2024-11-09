@@ -57,7 +57,7 @@ const authentication = asyncErrorHandler(async (req, res, next) => {
 		req.user = decodedUser;
 		next();
 	} catch (error) {
-		throw error;
+		throw new AuthenticationError('unauthentication error');
 	}
 });
 
