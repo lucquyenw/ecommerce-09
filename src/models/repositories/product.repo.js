@@ -8,6 +8,7 @@ const {
 	furniture,
 } = require('../../models/product.model');
 const { getSelectData, getUnSelectData } = require('../../utils');
+const productModel = require('../../models/product.model');
 
 const findAllDraftForShop = async ({ query, limit, skip }) => {
 	return await queryProduct({ query, limit, skip });
@@ -100,6 +101,21 @@ const findByIdAndUpdate = async ({
 	return await model.findByIdAndUpdate(productId, bodyUpdate, { new: isNew });
 };
 
+const getExistedProducts = async ({ products = [] }) => {
+	return Promise.all(
+		products.map(async (item) => {
+			const foundProduct = await product.findById(item.productId).lean();
+			if (foundProduct) {
+				return {
+					price: foundProduct.product_price,
+					quantity: item.quantity,
+					productId: item.productId,
+				};
+			}
+		})
+	);
+};
+
 module.exports = {
 	findAllDraftForShop,
 	publishProductByShop,
@@ -109,4 +125,5 @@ module.exports = {
 	findAllProducts,
 	findProduct,
 	findByIdAndUpdate,
+	getExistedProducts,
 };

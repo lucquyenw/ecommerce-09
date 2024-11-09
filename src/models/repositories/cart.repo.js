@@ -12,8 +12,14 @@ const createOrUpdateCart = async ({ query, update, option }) => {
 const updateOne = async ({ query, update }) => {
 	return await cartModel.updateOne(query, update);
 };
+
+const findCartById = async ({ id }) => {
+	return await cartModel.findById(id).lean();
+};
+
 module.exports = {
 	findCart,
 	createOrUpdateCart,
 	updateOne,
+	findCartById,
 };

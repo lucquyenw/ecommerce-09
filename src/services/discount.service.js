@@ -131,14 +131,25 @@ class DiscountService {
 	static async getDiscountAmount({ codeId, userId, shopId, products }) {
 		const foundDiscount = await findOneDiscount({
 			filter: {
-				discount_code: codeId,
-				discount_shop_id: convertToObjectId(shopId),
-				discount_product_ids: { $in: products.map((product) => product.id) },
+				$or: [
+					{
+						discount_code: codeId,
+						discount_shop_id: convertToObjectId(shopId),
+						discount_product_ids: {
+							$in: products.map((product) => product.id),
+						},
+					},
+					{
+						discount_code: codeId,
+						discount_shop_id: convertToObjectId(shopId),
+						discount_applies_to: 'all',
+					},
+				],
 			},
 		});
 
 		if (!foundDiscount) {
-			throw new NotFoundError('discount not found');
+			throw new BadRequestError('discount not found');
 		}
 
 		const {
@@ -170,6 +181,7 @@ class DiscountService {
 		// }
 
 		let totalOrder = 0;
+
 		if (discount_min_order_value > 0) {
 			totalOrder = products.reduce((acc, product) => {
 				return acc + product.quantity * product.price;
