@@ -7,6 +7,9 @@ const {
 } = require('../models/repositories/product.repo');
 const { BadRequestError } = require('../utils/customError');
 const { getDiscountAmount } = require('./discount.service');
+const { accquireLock, acquireLock, releaseLock } = require('./redis.service');
+
+const order = require('../models/order.model');
 
 class CheckOutService {
 	/**
@@ -100,6 +103,62 @@ class CheckOutService {
 			checkout_order,
 		};
 	};
+
+	static orderByUser = async ({
+		shop_order_ids,
+		cartId,
+		userId,
+		user_address = {},
+		user_payment = {},
+	}) => {
+		const { shop_order_ids_new, checkout_order } =
+			await CheckOutService.checkoutOrder({
+				cartId,
+				userId,
+				shop_order_ids,
+			});
+
+		const products = shop_order_ids_new.flatMap((order) => {
+			return order.item_products;
+		});
+
+		const acquireProduct = [];
+		for (let i = 0; i < products.length; i++) {
+			const { productId, quantity } = products[i];
+			const keyLock = await acquireLock(productId, quantity, cartId);
+			acquireProduct.push(keyLock ? true : false);
+			if (keyLock) {
+				await releaseLock(keyLock);
+			}
+		}
+
+		if (acquireProduct.includes(false)) {
+			throw new BadRequestError(
+				'One items quantity has been updated, please go back to your cart'
+			);
+		}
+
+		const newOrder = await order.create({
+			order_userId: userId,
+			order_checkout: checkout_order,
+			order_shipping: user_address,
+			order_payment: user_payment,
+			order_products: shop_order_ids_new,
+		});
+
+		if (newOrder) {
+		}
+
+		return newOrder;
+	};
+
+	static async getOrdersByUser() {}
+
+	static async getOneOrderByUser() {}
+
+	static async cancelOrder() {}
+
+	static async updateOrderStatusByAdmin() {}
 }
 
 module.exports = CheckOutService;
