@@ -19,6 +19,7 @@ const {
 } = require('../models/repositories/product.repo');
 const { removeNullFromPayload, updateNestedObjectParser } = require('../utils');
 const { BadRequestError } = require('../utils/customError');
+const { pushNotiToSystem } = require('./notification.service');
 
 class ProductFactory {
 	static productTypedClass = {};
@@ -122,6 +123,18 @@ class Product {
 				shopId: this.product_shop,
 				stock: this.product_quantity,
 			});
+
+			pushNotiToSystem({
+				type: 'SHOP-001',
+				receiverId: 1,
+				senderId: this.product_shop,
+				options: {
+					product_name: this.product_name,
+					shop_name: this.product_shop,
+				},
+			})
+				.then((rs) => console.log(rs))
+				.catch(console.error);
 		}
 
 		return createdProduct;
